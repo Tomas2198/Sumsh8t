@@ -26,6 +26,10 @@ window = pyglet.window.Window(WIDTH, HEIGHT)
 
 POCET_METEORU = 1
 
+MAX_SPACESHIP_SPEED = 400
+MAX_SPACESHIP_BACKWARDS_SPEED = -250
+
+
 ACCELERATION = 150
 LASER_ACCELERATION = 1000
 EFFECT_ACCELERATION = 100
@@ -106,19 +110,19 @@ class Meteor(Object):
         laser_hit = Las2metx < 50 and Las2mety < 50
 
         if init_metheor_spawn:
-            log.error('spawn main: ------------------ ')
+            log.debug('spawn main: ------------------ ')
             self.sprite.x = random.uniform(20, WIDTH-20)
             self.sprite.y = random.choice(pozice)
             self.sprite.rotn = random.uniform(0, 360)
             skup.append(self)
-            log.error('puvodni: %s', len(skup))
-            log.error('ponicene: %s', len(predskup))
-            log.error('znicene: %s', len(cilskup))
+            log.debug('puvodni: %s', len(skup))
+            log.debug('ponicene: %s', len(predskup))
+            log.debug('znicene: %s', len(cilskup))
 
             #spawn velkého meteoru
 
         if meteor_hit:
-            log.error('meteor hit: ------------------ ')
+            log.debug('meteor hit: ------------------ ')
             met = predskup.pop()
             self.sprite.x = met.sprite.x
             self.sprite.y = met.sprite.y
@@ -127,9 +131,9 @@ class Meteor(Object):
                 met.sprite.y = MIMOY
             self.sprite.rotn = random.uniform(0, 360)
             skup.append(self)
-            log.error('puvodni: %s', len(skup))
-            log.error('ponicene: %s', len(predskup))
-            log.error('znicene: %s', len(cilskup))
+            log.debug('puvodni: %s', len(skup))
+            log.debug('ponicene: %s', len(predskup))
+            log.debug('znicene: %s', len(cilskup))
 
             #spawn zbylých meteorů
 
@@ -150,7 +154,7 @@ class Meteor(Object):
                 #pohyb meteorů
 
         if laser_hit:
-            log.error('laser shoot: ------------------ ')
+            log.debug('laser shoot: ------------------ ')
             laser.sprite.x = MIMOLX
             laser.sprite.y = MIMOLY
             cilskup.append(self)
@@ -164,15 +168,15 @@ class Meteor(Object):
                     meteory_b3.clear()
                     meteory_m3.clear()
                     meteory_s3.clear()
-            log.error('puvodni: %s', len(skup))
-            log.error('ponicene: %s', len(predskup))
-            log.error('znicene: %s', len(cilskup))
+            log.debug('puvodni: %s', len(skup))
+            log.debug('ponicene: %s', len(predskup))
+            log.debug('znicene: %s', len(cilskup))
 
             #zásah laserem
 
         if rocket_hit:
 
-            log.error('rocket hit: ------------------ ')
+            log.debug('rocket hit: ------------------ ')
             player.sprite.x = WIDTH//2
             player.sprite.y = HEIGHT//2
             cilskup.append(self)
@@ -186,9 +190,9 @@ class Meteor(Object):
                 player.sprite.y = MIMOLY
 
                 #kolize s hracem
-            log.error('puvodni: %s', len(skup))
-            log.error('ponicene: %s', len(predskup))
-            log.error('znicene: %s', len(cilskup))
+            log.debug('puvodni: %s', len(skup))
+            log.debug('ponicene: %s', len(predskup))
+            log.debug('znicene: %s', len(cilskup))
 
 class Spaceship(Object):
 
@@ -206,7 +210,8 @@ class Spaceship(Object):
 
         if 'w' in stisknute_klavesy:
 
-            if self.sprite.acc < 250:
+            log.debug('acc: %s', self.sprite.acc)
+            if self.sprite.acc < MAX_SPACESHIP_SPEED:
                 self.sprite.acc += 10
             self.sprite.x = self.sprite.x + t * self.sprite.acc * math.cos(math.radians(90-self.sprite.rotation))
             self.sprite.y = self.sprite.y + t * self.sprite.acc * math.sin(math.radians(90-self.sprite.rotation))
@@ -214,9 +219,15 @@ class Spaceship(Object):
 
         if 'w' not in stisknute_klavesy and 's' not in stisknute_klavesy:
 
-            if self.sprite.acc != 0:
+            log.debug('acc: %s', self.sprite.acc)
+            if self.sprite.acc < 0:
+                self.sprite.acc += 10
+            if self.sprite.acc > 0:
                 self.sprite.acc -= 10
             if self.sprite.v == 'w':
+                self.sprite.x = self.sprite.x + t * self.sprite.acc * math.cos(math.radians(90-self.sprite.rotation))
+                self.sprite.y = self.sprite.y + t * self.sprite.acc * math.sin(math.radians(90-self.sprite.rotation))
+            elif self.sprite.v == 's':
                 self.sprite.x = self.sprite.x + t * self.sprite.acc * math.cos(math.radians(90-self.sprite.rotation))
                 self.sprite.y = self.sprite.y + t * self.sprite.acc * math.sin(math.radians(90-self.sprite.rotation))
             else:
@@ -225,10 +236,12 @@ class Spaceship(Object):
 
         if 's' in stisknute_klavesy:
 
-            if self.sprite.acc < 250:
-                self.sprite.acc += 10
-            self.sprite.x = self.sprite.x - t * self.sprite.acc * math.cos(math.radians(90-self.sprite.rotation))
-            self.sprite.y = self.sprite.y - t * self.sprite.acc * math.sin(math.radians(90-self.sprite.rotation))
+
+            log.debug('acc: %s', self.sprite.acc)
+            if MAX_SPACESHIP_BACKWARDS_SPEED < self.sprite.acc < MAX_SPACESHIP_SPEED:
+                self.sprite.acc -= 10
+            self.sprite.x = self.sprite.x + t * self.sprite.acc * math.cos(math.radians(90-self.sprite.rotation))
+            self.sprite.y = self.sprite.y + t * self.sprite.acc * math.sin(math.radians(90-self.sprite.rotation))
             self.sprite.v = 's'
 
         if 'd' in stisknute_klavesy:
